@@ -373,8 +373,9 @@ generateBtn.addEventListener("click", async () => {
     }
 
     if (!response.ok) {
-      throw new Error(`API error ${response.status}`);
-}
+      const errorData = await response.json();
+      throw new Error(errorData.detail || `API error ${response.status}`);
+    }
 
     const data = await response.json();
 
@@ -389,8 +390,9 @@ generateBtn.addEventListener("click", async () => {
     fetchDocuments();
   } catch (err) {
     console.error("Summarization error:", err);
-    showError("Unable to generate summary. Please try again.");
-    showToast("Unable to generate summary. Please try again.", "error");
+    showError(err.message || "Unable to generate summary. Please try again.");
+    showToast(err.message || "Unable to generate summary. Please try again.", "error");
+
   } finally {
     generateBtn.disabled = false;
     loadingIndicator.classList.add("hidden");

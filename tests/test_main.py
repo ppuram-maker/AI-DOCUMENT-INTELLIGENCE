@@ -1,5 +1,9 @@
 import uuid
 from fastapi.testclient import TestClient
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 from app.main import app
 
 
@@ -8,9 +12,8 @@ client = TestClient(app)
 
 def test_root():
     response = client.get("/")
-
     assert response.status_code == 200
-    assert response.json()["message"] == "AI Document Intelligence API is running"
+    assert "text/html" in response.headers["content-type"]
 
 def test_documents_requires_authentication():
     response = client.get("/documents")

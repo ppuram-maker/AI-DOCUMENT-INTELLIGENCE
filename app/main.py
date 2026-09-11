@@ -282,20 +282,31 @@ def summarize_document(file: UploadFile = File(...), current_user: dict = Depend
     try:
         summary = summarize_text(extracted_text)
     except ValueError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=500,
+            detail=str(e),
+        )
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to generate summary: {str(e)}",
+            detail=str(e),
         )
 
     # 5. Save document details and summary to SQLite database
-    document_id = save_document(
-        filename=file.filename,
-        extracted_text=extracted_text,
-        summary=summary,
-        user_id=int(current_user["sub"])
-    )
+        try:
+            document_id = save_document(
+                filename=file.filename,
+                extracted_text=extracted_text,
+                summary=summary,
+                user_id=int(current_user["sub"])
+        )
+        except Exception as e:
+
+            print("DATABASE SAVE ERROR:", repr(e))
+            raise HTTPException(
+                status_code=500,
+                detail=f"Database save failed: {str(e)}",
+        )
 
     return {
         "id": document_id,

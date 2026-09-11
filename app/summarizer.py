@@ -39,8 +39,12 @@ def summarize_text(text: str) -> str:
             )
             return interaction.output_text or ""
         except Exception as e:
-            raise RuntimeError(f"Gemini API call failed: {e}") from e
+            if "429" in str(e) or "quota" in str(e).lower():
+                raise RuntimeError(
+                    "Gemini API quota has been exceeded. Please try again later."
+                ) from e
 
+            raise RuntimeError(f"Gemini API call failed: {e}") from e
     # 4. Chunk the document text into manageable pieces (~8000 characters).
     # WHY CHUNKING IS NEEDED:
     # Large documents can exceed context limits or cause the model to overlook

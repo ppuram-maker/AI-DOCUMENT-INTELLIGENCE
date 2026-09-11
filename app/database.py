@@ -17,7 +17,7 @@ def get_db_connection() -> sqlite3.Connection:
 
 def init_db() -> None:
     """
-    Create the database tables if they do not already exist.
+    Create database tables and update older database schemas.
     """
     with get_db_connection() as conn:
         cursor = conn.cursor()
@@ -29,7 +29,8 @@ def init_db() -> None:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE NOT NULL,
                 email TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL
+                password_hash TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """
         )
@@ -48,11 +49,20 @@ def init_db() -> None:
             """
         )
 
-        # Add user_id to older databases if it doesn't exist
-        cursor.execute("PRAGMA table_info(documents)")
-        columns = [row[1] for row in cursor.fetchall()]
+        # Check users table columns
+        cursor.execute("PRAGMA table_info(users)")
+        user_columns = [row[1] for row in cursor.fetchall()]
 
-        if "user_id" not in columns:
+        if "created_at" not in user_columns:
+            cursor.execute(
+                "ALTER TABLE users ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+            )
+
+        # Check documents table columns
+        cursor.execute("PRAGMA table_info(documents)")
+        document_columns = [row[1] for row in cursor.fetchall()]
+
+        if "user_id" not in document_columns:
             cursor.execute(
                 "ALTER TABLE documents ADD COLUMN user_id INTEGER"
             )
