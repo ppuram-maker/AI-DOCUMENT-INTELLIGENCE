@@ -2,6 +2,8 @@
 
 An AI-powered document management and summarization platform that allows users to securely upload PDF documents, extract their text, generate intelligent summaries using Google Gemini, and manage their document history through a web interface.
 
+🚀 **Live Demo:** https://ai-document-intelligence-e3x1.onrender.com
+
 ## Features
 
 * 🔐 User registration and login
