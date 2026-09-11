@@ -6,6 +6,8 @@ import shutil
 
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import jwt
@@ -76,6 +78,8 @@ app.add_middleware(
 
 UPLOAD_DIR = Path(__file__).resolve().parent.parent / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
+app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 ALLOWED_EXTENSIONS = {".pdf", ".docx", ".txt"}
 
@@ -148,7 +152,16 @@ def register_user(request: RegisterRequest):
 
 @app.get("/")
 def read_root():
-    return {"message": "AI Document Intelligence API is running"}
+    return FileResponse(FRONTEND_DIR / "index.html")
+
+@app.get("/style.css")
+def serve_css():
+    return FileResponse(FRONTEND_DIR / "style.css")
+
+
+@app.get("/script.js")
+def serve_js():
+    return FileResponse(FRONTEND_DIR / "script.js")
 
 
 @app.post("/upload")
