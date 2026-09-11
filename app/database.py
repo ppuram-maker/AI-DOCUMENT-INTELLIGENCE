@@ -22,6 +22,18 @@ def init_db() -> None:
     with get_db_connection() as conn:
         cursor = conn.cursor()
 
+        # Create users table
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL
+            )
+            """
+        )
+
         # Create documents table
         cursor.execute(
             """
@@ -30,23 +42,20 @@ def init_db() -> None:
                 filename TEXT NOT NULL,
                 extracted_text TEXT NOT NULL,
                 summary TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                user_id INTEGER
             )
             """
         )
 
-        # Create users table
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT NOT NULL UNIQUE,
-                email TEXT NOT NULL UNIQUE,
-                password_hash TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        # Add user_id to older databases if it doesn't exist
+        cursor.execute("PRAGMA table_info(documents)")
+        columns = [row[1] for row in cursor.fetchall()]
+
+        if "user_id" not in columns:
+            cursor.execute(
+                "ALTER TABLE documents ADD COLUMN user_id INTEGER"
             )
-            """
-        )
 
         conn.commit()
 
